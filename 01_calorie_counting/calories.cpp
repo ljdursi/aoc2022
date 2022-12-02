@@ -67,11 +67,12 @@ int main(int argc, char** argv) {
     int max_cals = *std::max_element(total_calories.begin(), total_calories.end());
     std::cout << "Max calories: " << std::endl << max_cals << std::endl;
 
-    // find the sum of the max three values
     std::cout << "Part 2" << std::endl;
-    std::sort(total_calories.begin(), total_calories.end(), std::greater<>());
 
+    // find the sum of the max three values
+    std::sort(total_calories.begin(), total_calories.end(), std::greater<>());
     int max_three_sum = std::accumulate(total_calories.begin(), total_calories.begin() + 3, 0);
+
     std::cout << max_three_sum << std::endl;
 
     return 0;
