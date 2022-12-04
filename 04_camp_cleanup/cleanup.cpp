@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
     int n_fully_contained = std::transform_reduce(inputs.begin(), inputs.end(), 
                                                   0, std::plus<int>(),
                                                   [](const auto &pair) {
-                                                    auto range1= pair.first;
+                                                    auto range1 = pair.first;
                                                     auto range2 = pair.second;
                                                     return (range1.contains(range2) || range2.contains(range1)) ? 1 : 0;
                                                   });
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
     int n_overlaps = std::transform_reduce(inputs.begin(), inputs.end(), 
                                            0, std::plus<int>(),
                                            [](const auto &pair) {
-                                              auto range1= pair.first;
+                                              auto range1 = pair.first;
                                               auto range2 = pair.second;
                                               return range1.overlaps(range2) ? 1 : 0;
                                             });
