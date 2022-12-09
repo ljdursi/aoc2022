@@ -162,7 +162,6 @@ public:
             const auto &&[tpos_x, tpos_y] = pos.get_position();
             grid[tpos_y-tmin_y][tpos_x-tmin_x] = '#';
         }
-        grid[0-tmin_y][0-tmin_x] = 's';
 
         return grid;
     }
