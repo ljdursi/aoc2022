@@ -97,8 +97,7 @@ int main(int argc, char** argv) {
     auto signal = timeline
                   | rv::drop(19)
                   | rv::stride(40)
-                  | rv::transform([](const auto &p) { auto &&[t, x] = p; return t*x; })
-                  | ranges::to<std::vector<int>>;
+                  | rv::transform([](const auto &p) { auto &&[t, x] = p; return t*x; });
 
     auto result = std::accumulate(signal.begin(), signal.end(), 0);
     std::cout << "Part 1" << std::endl;
@@ -120,11 +119,10 @@ int main(int argc, char** argv) {
                   | rv::transform([](const auto &v) { 
                                     std::string s(v.begin(), v.end());
                                     return s;
-                                  })
-                  | ranges::to<std::vector<std::string>>;
+                                  });
 
     std::cout << "Part 1" << std::endl;
-    std::cout << std::endl;
+    std::cout <<  std::endl;
     for (auto &&p : pixels) {
         std::cout << p << std::endl;
     }
