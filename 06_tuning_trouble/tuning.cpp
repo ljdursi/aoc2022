@@ -9,7 +9,6 @@
 namespace rv = ranges::views;
 
 int marker_start(std::string datapacket, int n) {
-
     auto process = datapacket 
                  | rv::sliding(n)
                  | rv::enumerate

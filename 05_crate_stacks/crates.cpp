@@ -66,7 +66,6 @@ public:
     }
 
     void move(const int n, const int from, const int to, bool all_at_once = false) {
-
         assert(from > 0 && from <= n_stacks);
         assert(to > 0 && to <= n_stacks);
 

@@ -34,7 +34,6 @@ auto get_inputs(std::ifstream &input) {
 }
 
 std::vector<bool> visibility_of_row(const std::vector<int> &row) {
-
     std::vector<bool> visible_from_left;
     std::vector<bool> visible_from_right_reversed;
     int max_so_far = -1;

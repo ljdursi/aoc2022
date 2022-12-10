@@ -154,7 +154,6 @@ class RPS_round {
 
             return ss.str();
         }
-
 };
 
 std::vector<std::pair<char, char>> get_inputs(std::ifstream &input) {
