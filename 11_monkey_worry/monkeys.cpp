@@ -113,7 +113,7 @@ class BarrelOfMonkeys {
         }
 };
 
-std::vector<long> longegers_from_line(std::string line) {
+std::vector<long> ints_from_line(std::string line) {
     std::regex r("(\\d+)");
     std::sregex_iterator sm(line.begin(), line.end(), r);
     std::sregex_iterator end;
@@ -187,7 +187,7 @@ auto get_inputs(std::ifstream &input, bool worrying=false) {
 
     auto items = input_lines  
                  | rv::chunk(lines_per_monkey)
-                 | rv::transform([](const auto &v) { return longegers_from_line(v[1]); })
+                 | rv::transform([](const auto &v) { return ints_from_line(v[1]); })
                  | ranges::to<std::vector<std::vector<long>>>();
 
     auto update_fns = input_lines
