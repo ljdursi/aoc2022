@@ -53,10 +53,13 @@ public:
     }
 
     void inspect_items() {
+        const long relax_factor = (worrying ? 1 : 3);
+        const long range = div_product;
+
         current_items = current_items
                               | rv::transform(worry_update)
-                              | rv::transform([this](long i) { if (!this->worrying) return i / 3; else return i; })
-                              | rv::transform([this](long i) { return i % this->div_product; })
+                              | rv::transform([relax_factor](long i) { return i / relax_factor; })
+                              | rv::transform([range](long i) { return i % range; })
                               | ranges::to<std::deque<long>>;
         ninspections += current_items.size();
     }
