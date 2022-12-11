@@ -14,7 +14,7 @@ namespace rv = ranges::views;
 
 class Monkey {
 public:
-    std::deque<long> current_worry_items;
+    std::deque<long> current_items;
     std::function<long(long)> worry_update;
     std::function<long(long)> throw_to;
     long ninspections = 0;
@@ -30,38 +30,35 @@ public:
                                           ninspections(0),
                                           worrying(worrying),
                                           div_product(div_product) {
-            this->current_worry_items = std::deque<long>(items.begin(), items.end());
+            this->current_items = std::deque<long>(items.begin(), items.end());
     }
 
     std::vector<std::pair<long, long>> throw_items() {
-        if (current_worry_items.empty()) return {};
-
-        auto item = current_worry_items.front();
-        auto recipient = throw_to(item);
+        if (current_items.empty()) return {};
 
         std::vector<std::pair<long, long>> thrown_items;
-        while (!current_worry_items.empty()) {
-            auto item = current_worry_items.front();
+        while (!current_items.empty()) {
+            auto item = current_items.front();
             auto recipient = throw_to(item);
 
             thrown_items.push_back(std::make_pair(item, recipient));
-            current_worry_items.pop_front();
+            current_items.pop_front();
         }
 
         return thrown_items;
     }
 
     void catch_item(long item) {
-        current_worry_items.push_back(item);
+        current_items.push_back(item);
     }
 
     void inspect_items() {
-        current_worry_items = current_worry_items
+        current_items = current_items
                               | rv::transform(worry_update)
                               | rv::transform([this](long i) { if (!this->worrying) return i / 3; else return i; })
                               | rv::transform([this](long i) { return i % this->div_product; })
                               | ranges::to<std::deque<long>>;
-        ninspections += current_worry_items.size();
+        ninspections += current_items.size();
     }
 };
 
@@ -94,12 +91,12 @@ class BarrelOfMonkeys {
             long i = 0;
             for (auto &monkey : b.monkeys) {
                 os << "Monkey " << i++ << ": ";
-                if (monkey.current_worry_items.empty()) {
+                if (monkey.current_items.empty()) {
                     os << std::endl;
                     continue;
                 }
-                auto str = std::transform_reduce(monkey.current_worry_items.begin(),
-                                                 monkey.current_worry_items.end(),
+                auto str = std::transform_reduce(monkey.current_items.begin(),
+                                                 monkey.current_items.end(),
                                                  std::string(),
                                                  [](std::string a, std::string b) { return a + ", " + b; },
                                                  [](long i) { return std::to_string(i); });
@@ -238,8 +235,9 @@ int main(int argc, char** argv) {
 
     std::cout << "Part 1" << std::endl;
 
-    auto monkeys = get_inputs(input);
-    BarrelOfMonkeys barrel(monkeys);
+    auto original_monkeys = get_inputs(input);
+    auto unworrying_monkeys = original_monkeys;
+    BarrelOfMonkeys barrel(unworrying_monkeys);
 
     for (int round = 0; round < 20; round++) {
         barrel.round();
@@ -251,11 +249,8 @@ int main(int argc, char** argv) {
     std::cout << "Score: " << total_score << std::endl;
 
     std::cout << "Part 2" << std::endl;
-    input.clear();
-    input.seekg(0, std::ios::beg);
-
-    auto worrying_monkeys = get_inputs(input, true);
-    BarrelOfMonkeys barrel_of_worry(worrying_monkeys);
+    BarrelOfMonkeys barrel_of_worry(original_monkeys);
+    barrel_of_worry.make_worrying();
 
     for (int round = 0; round < 10000; round++) {
         barrel_of_worry.round();
