@@ -4,6 +4,7 @@
 #include <set>
 #include <map>
 #include <deque>
+#include <limits>
 #include <algorithm>
 #include "range/v3/all.hpp"
 
@@ -186,7 +187,7 @@ int main(int argc, char** argv) {
                  | ranges::to<std::vector<Position>>();
 
     auto a_distances = a_posns
-                   | rv::transform([&distances](const auto &p) { return distances[p]; })
+                   | rv::transform([&distances](const auto &p) { if (distances.contains(p)) return distances[p]; else return INT_MAX; })
                    | rv::filter([](const auto &d) { return d != 0; })
                    | ranges::to<std::vector<int>>(); 
 
