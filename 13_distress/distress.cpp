@@ -38,6 +38,23 @@ std::ostream& operator<<(std::ostream& os, const Packet& packet) {
     return os;
 }
 
+
+std::vector<std::string> subtokens(const std::vector<std::string>& tokens, const int idx) {
+    // find the ']' that matches the '[' at idx
+    int num_open = 1;
+    int i = idx+1;
+    while (num_open > 0) {
+        if (tokens[i] == "[") {
+            ++num_open;
+        } else if (tokens[i] == "]") {
+            --num_open;
+        }
+        ++i;
+    }
+
+    return std::vector<std::string>(tokens.begin()+idx, tokens.begin()+i);
+}
+
 Packet from_tokens(const std::vector<std::string>& tokens, const int start=1) {
     if (start == tokens.size()-1 && tokens[start] != "]" && tokens[start] != "[") {
         return Packet{std::stoi(tokens[start])};
@@ -46,9 +63,9 @@ Packet from_tokens(const std::vector<std::string>& tokens, const int start=1) {
     std::vector<Packet> result;
     for (int i=start; i<tokens.size(); ++i) {
         if (tokens[i] == "[") {
-            result.push_back(from_tokens(tokens, i+1));
-            while (tokens[++i] != "]") {}
-            continue;
+            auto sub = subtokens(tokens, i);
+            result.push_back(from_tokens(sub));
+            i += sub.size()-1;
         } else if (tokens[i] == "]") {
             break;
         } else {
@@ -63,7 +80,6 @@ Packet vector_packet_from_int(int i) {
     return Packet{vp};
 }
 
-
 auto operator<=>(const Packet &left, const Packet &right) {
     if (std::holds_alternative<int>(left) && std::holds_alternative<int>(right)) {
         return std::get<int>(left) <=> std::get<int>(right);
@@ -76,8 +92,9 @@ auto operator<=>(const Packet &left, const Packet &right) {
         auto right_vec = std::get<std::vector<Packet>>(right);
 
         for (int i=0; i<std::min(left_vec.size(), right_vec.size()); ++i) {
-            if (auto cmp = left_vec[i] <=> right_vec[i]; cmp != 0) {
-                return cmp;
+            auto cmp = left_vec[i] <=> right_vec[i];
+            if (!(cmp == 0)) {
+                return left_vec[i] <=> right_vec[i];
             }
         }
         return left_vec.size() <=> right_vec.size();
@@ -107,6 +124,10 @@ int main(int argc, char** argv) {
     }
 
     auto lines = get_inputs(input);
+
+    auto tokens = lines 
+                | rv::transform(tokenize) 
+                | ranges::to<std::vector<std::vector<std::string>>>();
 
     auto packets = lines 
                 | rv::transform(tokenize) 
