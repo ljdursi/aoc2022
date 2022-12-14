@@ -38,36 +38,28 @@ std::ostream& operator<<(std::ostream& os, const Packet& packet) {
     return os;
 }
 
-
-std::vector<std::string> subtokens(const std::vector<std::string>& tokens, const int idx) {
-    // find the ']' that matches the '[' at idx
-    int num_open = 1;
-    int i = idx+1;
-    while (num_open > 0) {
-        if (tokens[i] == "[") {
-            ++num_open;
-        } else if (tokens[i] == "]") {
-            --num_open;
-        }
-        ++i;
-    }
-
-    return std::vector<std::string>(tokens.begin()+idx, tokens.begin()+i);
-}
-
 Packet from_tokens(const std::vector<std::string>& tokens, const int start=1) {
-    if (start == tokens.size()-1 && tokens[start] != "]" && tokens[start] != "[") {
-        return Packet{std::stoi(tokens[start])};
-    }
+    auto find_matching_bracket = [&tokens](const int start) {
+        int num_open = 1;
+        int i = start+1;
+        while (num_open > 0) {
+            if (tokens[i] == "[") {
+                ++num_open;
+            } else if (tokens[i] == "]") {
+                --num_open;
+            }
+            ++i;
+        }
+        return i;
+    };
 
     std::vector<Packet> result;
-    for (int i=start; i<tokens.size(); ++i) {
+    for (int i=start; i<tokens.size()-1; ++i) {
         if (tokens[i] == "[") {
-            auto sub = subtokens(tokens, i);
+            auto j = find_matching_bracket(i);
+            std::vector<std::string> sub(tokens.begin()+i, tokens.begin()+j);
             result.push_back(from_tokens(sub));
-            i += sub.size()-1;
-        } else if (tokens[i] == "]") {
-            break;
+            i = j-1;
         } else {
             result.push_back(Packet{std::stoi(tokens[i])});
         }
@@ -124,10 +116,6 @@ int main(int argc, char** argv) {
     }
 
     auto lines = get_inputs(input);
-
-    auto tokens = lines 
-                | rv::transform(tokenize) 
-                | ranges::to<std::vector<std::vector<std::string>>>();
 
     auto packets = lines 
                 | rv::transform(tokenize) 
