@@ -71,6 +71,14 @@ class Cave {
     std::map<Point, map_element> map;
     Point inlet;
     int deepest_wall;
+    std::optional<int> floor;
+
+    bool is_free(const Point& p) const {
+        if (floor.has_value() && p.y == floor.value())
+            return false;
+
+        return map.find(p) == map.end();
+    }
 
     std::optional<Point> next_sand_point() const {
         Point p = inlet;
@@ -79,7 +87,7 @@ class Cave {
             std::vector<Point> next_points = {p.below(), p.diagonal_left(), p.diagonal_right()};
             std::vector<Point> free = next_points
                                     | rv::transform([this](const auto& p){
-                                                         bool free = this->map.find(p) == this->map.end();
+                                                         bool free = this->is_free(p);
                                                          return std::make_pair(p, free);})
                                     | rv::filter([](const auto& p){return p.second;})
                                     | rv::transform([](const auto& p){return p.first;})
@@ -111,13 +119,26 @@ public:
         deepest_wall = max_y->first.y;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Cave& cave) {
-        auto [min_x, max_x] = std::minmax_element(cave.map.begin(), cave.map.end(), [](const auto& lhs, const auto& rhs){return lhs.first.x < rhs.first.x;});
-        auto [min_y, max_y] = std::minmax_element(cave.map.begin(), cave.map.end(), [](const auto& lhs, const auto& rhs){return lhs.first.y < rhs.first.y;});
+    std::pair<Point, Point> bounding() const {
+        auto [min_x, max_x] = std::minmax_element(map.begin(), map.end(), [](const auto& lhs, const auto& rhs){return lhs.first.x < rhs.first.x;});
+        auto [min_y, max_y] = std::minmax_element(map.begin(), map.end(), [](const auto& lhs, const auto& rhs){return lhs.first.y < rhs.first.y;});
+        return std::make_pair(Point(min_x->first.x, min_y->first.y), Point(max_x->first.x, max_y->first.y));
+    }
 
-        for (int y = min_y->first.y; y <= max_y->first.y; ++y) {
+    void set_floor(int y) {
+        floor = y;
+        deepest_wall = y;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Cave& cave) {
+        const auto ppt = cave.bounding();
+        const auto &[min_xy, max_xy] = ppt;
+        const auto &[min_x, min_y] = min_xy;
+        const auto &[max_x, max_y] = max_xy;
+
+        for (int y = min_y; y <= max_y; ++y) {
             std::string row = std::to_string(y);
-            auto map_line = rv::iota(min_x->first.x, max_x->first.x+1)
+            auto map_line = rv::iota(min_x, max_x)
                           | rv::transform([&cave, y](int x){return cave.map.find(Point{x, y});})
                           | rv::transform([&cave](const auto &it) {
                                 if (it == cave.map.end()) {
@@ -133,6 +154,9 @@ public:
     };
 
     bool add_sand() {
+        if (!is_free(inlet))
+            return false;
+
         auto ptest = next_sand_point();
         if (!ptest.has_value()) {
             return false;
@@ -192,5 +216,16 @@ int main(int argc, char** argv) {
     std::cout << "Part 1" << std::endl;
     std::cout << count << std::endl;
 
+    Cave cave2(inputs);
+    auto bounds = cave2.bounding();
+    cave2.set_floor(bounds.second.y+2);
+
+    count = 0;
+    while (cave2.add_sand()) {
+        count++;
+    }
+
+    std::cout << "Part 2" << std::endl;
+    std::cout << count << std::endl;
     return 0;
 }
