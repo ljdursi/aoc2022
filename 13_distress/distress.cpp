@@ -67,18 +67,22 @@ Packet from_tokens(const std::vector<std::string>& tokens, const int start=1) {
     return Packet{result};
 };
 
-Packet vector_packet_from_int(int i) {
-    std::vector<Packet> vp = {Packet{i}};
-    return Packet{vp};
-}
-
 auto operator<=>(const Packet &left, const Packet &right) {
-    if (std::holds_alternative<int>(left) && std::holds_alternative<int>(right)) {
+    auto vector_from_scalar = [](const Packet& p) {
+        int i = std::get<int>(p);
+        std::vector<Packet> vp = {Packet{i}};
+        return Packet{vp};
+    };
+
+    auto is_scalar = [](const Packet& p) { return std::holds_alternative<int>(p); };
+    auto is_vector = [](const Packet& p) { return std::holds_alternative<std::vector<Packet>>(p); };
+
+    if (is_scalar(left) && is_scalar(right)) {
         return std::get<int>(left) <=> std::get<int>(right);
-    } else if (std::holds_alternative<int>(left) && std::holds_alternative<std::vector<Packet>>(right)) {
-        return vector_packet_from_int(std::get<int>(left)) <=> right;
-    } else if (std::holds_alternative<std::vector<Packet>>(left) && std::holds_alternative<int>(right)) {
-        return left <=> vector_packet_from_int(std::get<int>(right));
+    } else if (is_scalar(left) && is_vector(right)) {
+        return vector_from_scalar(left) <=> right;
+    } else if (is_vector(left) && is_scalar(right)) {
+        return left <=> vector_from_scalar(right);
     } else {
         auto left_vec = std::get<std::vector<Packet>>(left);
         auto right_vec = std::get<std::vector<Packet>>(right);
