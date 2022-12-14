@@ -127,8 +127,7 @@ int main(int argc, char** argv) {
                         | rv::transform([](const auto& v) { 
                                            auto left = v[0];
                                            auto right = v[1];
-                                           return left <= right; })
-                        | ranges::to<std::vector<bool>>();
+                                           return left <= right; });
 
     auto scores = in_right_order 
                 | rv::enumerate
