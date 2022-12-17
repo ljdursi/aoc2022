@@ -114,7 +114,6 @@ class Tunnels {
     }
 
     std::tuple<std::vector<std::string>, int> DFS(const std::string &start, const int last_minute, std::map<std::string, room_state> local_room_states, std::vector<std::string> path={}, int minute=1) {
-
         std::set<std::string> turned_on = local_room_states 
                                         | rv::filter([](const auto &room) { return room.second.valve; }) 
                                         | rv::transform([](const auto &room) { return room.first; })
@@ -166,7 +165,6 @@ class Tunnels {
 
 public:
     Tunnels(const std::string start, const std::vector<std::string> &room_names, const std::vector<int> &flow_rates, const std::vector<std::vector<std::string>> &tunnels) {
-
         std::map<std::string, std::vector<std::string>> tunnel_map;
         for (const auto &[room_name, rate, connecting_tunnels] : rv::zip(room_names, flow_rates, tunnels)) {
             this->rooms.insert(room_name);
