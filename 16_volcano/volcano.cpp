@@ -114,10 +114,7 @@ class Tunnels {
     }
 
     std::tuple<std::vector<std::string>, int> DFS(const std::string &start, const int last_minute, std::map<std::string, room_state> local_room_states, std::vector<std::string> path={}, int minute=1) {
-        std::set<std::string> turned_on = local_room_states 
-                                        | rv::filter([](const auto &room) { return room.second.valve; }) 
-                                        | rv::transform([](const auto &room) { return room.first; })
-                                        | ranges::to<std::set<std::string>>();
+        int n_turned_on = ranges::count_if(local_room_states, [](const auto &p) { const auto &[room, state] = p; return state.valve; });
 
         auto total_flow = [&](const auto &room_states) {
                                    return std::accumulate(room_states.begin(), room_states.end(), 0, 
@@ -127,11 +124,9 @@ class Tunnels {
                                            int flow = rate * (last_minute + 1 - state.minute);
                                            return sum + flow; }); };
 
-        auto skip = [&](const std::string &room) { return local_room_states[room].valve || flow_rates[room] == 0; };
-
         auto best_so_far = std::make_tuple(path, total_flow(local_room_states));
 
-        if (turned_on.size() == n_nonzero_valves || minute >= last_minute) {
+        if ((n_turned_on == n_nonzero_valves) || (minute >= last_minute)) {
             update_memo_scores(path, total_flow(local_room_states));
             return best_so_far;
         }
@@ -140,7 +135,6 @@ class Tunnels {
         if (!local_room_states[start].valve && flow_rates[start] > 0) {
             minute++;
             local_room_states[start].open_valve(minute); 
-            turned_on.insert(start);
 
             if (total_flow(local_room_states) > std::get<1>(best_so_far)) {
                 update_memo_scores(path, total_flow(local_room_states));
@@ -149,7 +143,8 @@ class Tunnels {
         } 
 
         for (const auto &[neighbour, distance] : g->get_neighbours(start)) {
-            if (skip(neighbour)) continue;
+            if (local_room_states[neighbour].valve) continue;
+            if (flow_rates[neighbour] == 0) continue;
             if (distance + minute > last_minute) continue;
 
             const auto &[path1, flow1] = DFS(neighbour, last_minute, local_room_states, path, minute+distance);
