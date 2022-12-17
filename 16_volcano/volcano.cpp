@@ -148,8 +148,6 @@ class Tunnels {
             if (distance + minute > last_minute) continue;
 
             const auto &[path1, flow1] = DFS(neighbour, last_minute, local_room_states, path, minute+distance);
-            update_memo_scores(path1, flow1);
-
             if (flow1 > std::get<1>(best_so_far)) {
                 best_so_far = std::make_tuple(path1, flow1);
             }
