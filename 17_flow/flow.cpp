@@ -69,7 +69,6 @@ class Tetris {
     bool is_blocked(const Point &block_position, const rock_block &block, const Point &direction) {
         for (const auto &[j, block_row]: block | rv::enumerate) {
             for (const auto &[i, block_elem]: block_row | rv::enumerate) {
-
                 if (block_elem == ' ') 
                     continue;
                 
