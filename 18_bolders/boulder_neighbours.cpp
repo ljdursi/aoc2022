@@ -85,13 +85,19 @@ class BoulderMap {
                 continue;
             }
 
-            if (memo_path_to_outside.contains(q)) {
-                path_to_outside = memo_path_to_outside.at(q);
-                break;
+            if (boulders.contains(q)) {
+                continue;
             }
+
+            visited.insert(q);
 
             if (outside(q)) {
                 path_to_outside = true;
+                break;
+            }
+
+            if (memo_path_to_outside.contains(q)) {
+                path_to_outside = memo_path_to_outside.at(q);
                 break;
             }
 
