@@ -59,7 +59,6 @@ class Tetris {
     int current_block = -1;
     const std::vector<rock_block> blocks = {minus, plus, ell, pipe, square};
     const size_t n_block_types = blocks.size();
-    bool block_in_motion = false;
 
     std::string winds = "";
     int wind_idx = -1;
@@ -125,8 +124,7 @@ public:
     void add_block() {
         rock_block block = next_block();
         Point block_position = {2, max_height + 4};
-
-        block_in_motion = true;
+        bool block_in_motion = true;
 
         do {
             auto wind = wind_direction();
@@ -213,6 +211,7 @@ int main(int argc, char** argv) {
         tetris.add_block();
     }
 
+    std::cout << "Part 1" << std::endl;
     std::cout << tetris.get_max_height()+1 << std::endl;
 
     std::map<std::tuple<int, int, std::set<Point>>, std::pair<int, long>> seen;
@@ -229,21 +228,18 @@ int main(int argc, char** argv) {
             cycle_len = i - cycle_start;
             height_diff = tetris.get_max_height() - height_start;
             cycle_found = true;
-            std::cout << "Cycle found at height " << tetris.get_max_height() << std::endl;
         } else {
             seen[state] = {i, tetris.get_max_height()};
         }
     }
 
     long long height = tetris.get_max_height();
-    std::cout << "Cycle found at " << i << " with length " << cycle_len << " and height diff " << height_diff << std::endl;
 
     // we will now skip ahead enough cycles to get close to 1 trillion
     long ncycles = ((1000000000000L - 1L) - i) / cycle_len;
     height += height_diff * ncycles;
     i += cycle_len * ncycles;
 
-    std::cout << "Skipping ahead to " << i << " (" << ncycles << " cycles of " << cycle_len << ")" << std::endl;
 
     auto old_height = tetris.get_max_height();
     for (;i<1000000000000; i++) {
@@ -251,6 +247,7 @@ int main(int argc, char** argv) {
     }
     height += (tetris.get_max_height() - old_height);
 
+    std::cout << "Part 2" << std::endl;
     std::cout << height+1 << std::endl;
 
     return 0;
