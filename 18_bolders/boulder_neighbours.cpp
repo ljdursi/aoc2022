@@ -143,7 +143,6 @@ class BoulderMap {
 
                     if (path_to_outside(n)) 
                         n_external++;
-                    
                 }
             }
             return n_external;
