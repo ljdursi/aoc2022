@@ -47,7 +47,7 @@ struct message {
         const auto orig_idx2 = shuffled_items_and_prev_indices.at(other_idx).second;
 
         std::swap(shuffled_items_and_prev_indices[cur_idx], shuffled_items_and_prev_indices[other_idx]);
-        std::swap(items_and_cur_indices[orig_idx1].second, items_and_cur_indices[orig_idx2].second = cur_idx);
+        std::swap(items_and_cur_indices[orig_idx1].second, items_and_cur_indices[orig_idx2].second);
 
         if (other_idx == head)
             head = cur_idx;
