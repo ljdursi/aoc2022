@@ -148,38 +148,41 @@ std::map<std::string, monkey_string_op> get_inputs(std::istream &input) {
 }
 
 long solve_for_x(monkey_expr l_expr, long rhs) {
-    while (!std::holds_alternative<op>(l_expr)) {
-        std::vector<monkey_expr> current{monkey_expr{op::eql}, l_expr, monkey_expr{rhs}};
-        auto v = std::get<std::vector<monkey_expr>>(l_expr);
-
-        auto opr = std::get<op>(v[0]);
-        auto ll = v[1];
-        auto rr = v[2];
-        
-        if (std::holds_alternative<long>(rr)) {
-           rhs = calculate(inverse[opr], rhs, std::get<long>(rr));
-           l_expr = ll;
-        } else {
-            switch (opr) {
-                case op::add:
-                    rhs = calculate(op::sub, rhs, std::get<long>(ll));
-                    break;
-                case op::sub:
-                    rhs = calculate(op::sub, std::get<long>(ll), rhs);
-                    break;
-                case op::mul:
-                    rhs = calculate(op::div, rhs, std::get<long>(ll));
-                    break;
-                case op::div:
-                    rhs = calculate(op::mul, std::get<long>(ll), rhs);
-                    break;
-                default:
-                    break;
-            }
-            l_expr = rr;
-        }
+    if (std::holds_alternative<long>(l_expr)) {
+        return std::get<long>(l_expr);
     }
-    return rhs; 
+
+    std::vector<monkey_expr> current{monkey_expr{op::eql}, l_expr, monkey_expr{rhs}};
+    auto v = std::get<std::vector<monkey_expr>>(l_expr);
+
+    auto opr = std::get<op>(v[0]);
+    auto ll = v[1];
+    auto rr = v[2];
+        
+    if (std::holds_alternative<long>(rr)) {
+        rhs = calculate(inverse[opr], rhs, std::get<long>(rr));
+        l_expr = ll;
+    } else {
+        switch (opr) {
+            case op::add:
+                rhs = calculate(op::sub, rhs, std::get<long>(ll));
+                break;
+            case op::sub:
+                rhs = calculate(op::sub, std::get<long>(ll), rhs);
+                break;
+            case op::mul:
+                rhs = calculate(op::div, rhs, std::get<long>(ll));
+                break;
+            case op::div:
+                rhs = calculate(op::mul, std::get<long>(ll), rhs);
+                break;
+            default:
+                break;
+        }
+        l_expr = rr;
+    }
+
+    return solve_for_x(l_expr, rhs);
 }
 
 int main(int argc, char** argv) {
