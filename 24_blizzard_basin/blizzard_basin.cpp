@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <compare>
+#include <algorithm>
 #include "range/v3/all.hpp"
 
 namespace rv = ranges::views;
@@ -81,16 +82,14 @@ struct BlizzardsState {
     std::vector<Blizzard> blizzards;
     size_t nrows;
     size_t ncols;
-    size_t start;
-    size_t goal;
+    Point start;
+    Point goal;
 };
 
 std::vector<std::vector<std::vector<char>>> maps_from_blizards(const BlizzardsState &bs) {
     std::vector<Blizzard> blizzards = bs.blizzards;
     size_t nrows = bs.nrows;
     size_t ncols = bs.ncols;
-    size_t start = bs.start;
-    size_t goal = bs.goal;
 
     size_t nminutes = nrows * ncols;
     std::vector<std::vector<std::vector<char>>> maps(nminutes, std::vector<std::vector<char>>(nrows+2, std::vector<char>(ncols+2, '.')));
@@ -105,8 +104,8 @@ std::vector<std::vector<std::vector<char>>> maps_from_blizards(const BlizzardsSt
             maps[minute][0][col] = '#';
             maps[minute][nrows+1][col] = '#';
         }
-        maps[minute][0][start] = '.';
-        maps[minute][nrows+1][goal] = '.';
+        maps[minute][bs.start.x][bs.start.y] = '.';
+        maps[minute][bs.goal.x][bs.goal.y] = '.';
         
         // blizzards
         for (auto &blizzard : blizzards) {
@@ -131,9 +130,7 @@ std::vector<std::vector<std::vector<char>>> maps_from_blizards(const BlizzardsSt
     return maps;
 }
 
-std::vector<Point> bfs(const std::vector<std::vector<std::vector<char>>> &maps, const BlizzardsState &bs) {
-    Point start = Point{0, (int)bs.start};
-    Point goal = Point{(int)bs.nrows+1, (int)bs.goal};
+std::vector<Point> bfs(const std::vector<std::vector<std::vector<char>>> &maps, const BlizzardsState &bs, int initial_minute=0) {
     const size_t nminutes = maps.size();
 
     using coordinates = std::tuple<Point, int>;
@@ -141,7 +138,7 @@ std::vector<Point> bfs(const std::vector<std::vector<std::vector<char>>> &maps, 
 
     using state = std::tuple<std::vector<Point>, int>;
     std::queue<state> que;
-    que.push({{start}, 0});
+    que.push({{bs.start}, initial_minute});
 
     while (!que.empty()) {
         auto [path, minute] = que.front();
@@ -149,7 +146,7 @@ std::vector<Point> bfs(const std::vector<std::vector<std::vector<char>>> &maps, 
 
         Point p = path.back();
 
-        if (p == goal) {
+        if (p == bs.goal) {
             return path;
         }
 
@@ -187,8 +184,8 @@ BlizzardsState get_inputs(std::istream &input) {
     result.nrows = lines.size() - 2;    
     result.ncols = lines[0].size() - 2;
 
-    result.start = lines[0].find('.');
-    result.goal = lines[lines.size()-1].find('.');
+    result.start = Point{0, (int)lines[0].find('.')};
+    result.goal = {(int)(lines.size()-1), (int)(lines[lines.size()-1].find('.'))};
 
     result.blizzards = lines | rv::enumerate
                              | rv::drop(1)
@@ -219,13 +216,25 @@ int main(int argc, char **argv) {
         return 2;
     }
 
-    const auto blizzards_state = get_inputs(input);
+    auto blizzards_state = get_inputs(input);
     const auto maps = maps_from_blizards(blizzards_state);
 
     auto best_path = bfs(maps, blizzards_state);
 
     std::cout << "Part 1" << std::endl;
     std::cout << best_path.size()-1 << std::endl;
+
+    std::cout << "Part 2" << std::endl;
+    int minute = best_path.size()-1;
+
+    std::swap(blizzards_state.start, blizzards_state.goal);
+    auto path_back = bfs(maps, blizzards_state, minute);
+    int minute2 = minute + path_back.size()-1;
+
+    std::swap(blizzards_state.start, blizzards_state.goal);
+    auto return_path = bfs(maps, blizzards_state, minute2);
+
+    std::cout << minute2 + return_path.size()-1 << std::endl;
 
     return 0;
 }
